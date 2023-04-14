@@ -20,29 +20,19 @@ provider "aws" {
   profile = "personal"
 }
 
-resource "aws_vpc" "terraform_vpc" {
-  cidr_block           = "10.0.0.0/16"
-  instance_tenancy     = "default"
-  enable_dns_hostnames = true
+module "networking" {
+  source = "../modules/networking"
 
-  tags = {
-    Name = "VPC - secondary"
-  }
-}
-
-resource "aws_subnet" "public_subnet" {
-  vpc_id            = aws_vpc.terraform_vpc.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "ap-southeast-1a"
-
-  tags = {
-    Name        = "Public subnet"
-    Environment = "Dev"
-  }
+  vpc_name                 = "VPC - secondary"
+  vpc_environment_name     = "Dev"
+  subnet_cidr_block        = "10.0.1.0/24"
+  subnet_availability_zone = "ap-southeast-1a"
+  subnet_name              = "Dev Public subnet"
+  subnet_env_name          = "Dev"
 }
 
 module "s3" {
-  source = "./modules/s3"
+  source = "../modules/s3"
 
   bucket_name = "thinh-tf-test-bucket"
   tag_name    = "Teaching"
@@ -50,11 +40,11 @@ module "s3" {
 }
 
 module "instances" {
-  source = "./modules/instances"
+  source = "../modules/instances"
 
   instance_type = "t2.micro"
   key_name      = "deployer-key"
-  public_subnet = aws_subnet.public_subnet.id
+  public_subnet = module.networking.subnet_id
   tag_name      = "Terraform EC2"
   env_name      = "DEV"
 }
