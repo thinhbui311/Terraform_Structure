@@ -7,7 +7,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket  = "terraform-dev-state"
+    bucket  = "terraform-prod-state"
     key     = "tf-state/terraform.tfstate"
     region  = "ap-southeast-1"
     encrypt = "true"
@@ -23,20 +23,20 @@ provider "aws" {
 module "networking" {
   source = "../modules/networking"
 
-  vpc_name                 = "VPC - secondary"
-  vpc_environment_name     = "Dev"
+  vpc_name                 = "VPC - Prod"
+  vpc_environment_name     = "Prod"
   subnet_cidr_block        = "10.0.1.0/24"
   subnet_availability_zone = "ap-southeast-1a"
-  subnet_name              = "Dev Public subnet"
-  subnet_env_name          = "Dev"
+  subnet_name              = "Prod Public subnet"
+  subnet_env_name          = "Prod"
 }
 
 module "s3" {
   source = "../modules/s3"
 
-  bucket_name = "tf-test-bucket"
+  bucket_name = "tf-prod-bucket"
   tag_name    = "Teaching"
-  tag_env     = "DEV"
+  tag_env     = "Prod"
 }
 
 module "instances" {
@@ -46,5 +46,5 @@ module "instances" {
   key_name      = "deployer-key"
   public_subnet = module.networking.subnet_id
   tag_name      = "Terraform EC2"
-  env_name      = "DEV"
+  env_name      = "Prod"
 }
